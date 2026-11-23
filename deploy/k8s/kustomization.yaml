@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: streamsight
+
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - api.yaml
+  - pipeline.yaml
+
+configMapGenerator:
+  - name: pipeline-config
+    files:
+      - pipeline.yaml=../../configs/pipeline.rtsp.yaml
+
+secretGenerator:
+  - name: streamsight-secrets
+    envs:
+      - secrets.env
+
+generatorOptions:
+  disableNameSuffixHash: false

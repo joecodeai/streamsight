@@ -1,0 +1,65 @@
+# One pipeline pod per GPU node; each handles the cameras in its config.
+# Needs the NVIDIA device plugin (or GPU Operator) and a Milvus service
+# (e.g. helm install milvus milvus/milvus --set cluster.enabled=false -n streamsight).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streamsight-pipeline
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: streamsight-pipeline
+  template:
+    metadata:
+      labels:
+        app: streamsight-pipeline
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9100"
+    spec:
+      containers:
+        - name: pipeline
+          image: ghcr.io/joecodeai/streamsight-pipeline:latest
+          args: ["-c", "/config/pipeline.yaml"]
+          env:
+            - name: STREAMSIGHT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: streamsight-secrets
+                  key: STREAMSIGHT_API_KEY
+          ports:
+            - containerPort: 9100
+          resources:
+            requests: { cpu: "2", memory: 4Gi }
+            limits:
+              memory: 8Gi
+              nvidia.com/gpu: 1
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: models
+              mountPath: /app/models
+      volumes:
+        - name: config
+          configMap:
+            name: pipeline-config
+        - name: models
+          persistentVolumeClaim:
+            claimName: streamsight-models
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: streamsight-models
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi

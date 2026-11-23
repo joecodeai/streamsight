@@ -1,0 +1,134 @@
+# Full stack on one GPU host:
+#   docker compose up -d                      # API, DB, Milvus, RTSP simulator, monitoring
+#   docker compose --profile gpu up -d        # + Python pipeline (ONNX Runtime / TensorRT)
+#   docker compose --profile deepstream up -d # + DeepStream pipeline instead
+#
+# Prerequisites: models in ./models (scripts/export_models.py) and sample videos in
+# ./data/videos (scripts/download_samples.py). GPU services need the NVIDIA Container Toolkit.
+
+x-gpu: &gpu
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: streamsight
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-streamsight}
+      POSTGRES_DB: streamsight
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U streamsight"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    environment:
+      DATABASE_URL: postgresql://streamsight:${POSTGRES_PASSWORD:-streamsight}@postgres:5432/streamsight
+      STREAMSIGHT_API_KEY: ${STREAMSIGHT_API_KEY:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # --- Milvus standalone (vector store for re-id embeddings) ---------------
+  # Embedded etcd + local storage, as in Milvus's own standalone_embed.sh.
+  milvus:
+    image: milvusdb/milvus:v2.5.10
+    command: ["milvus", "run", "standalone"]
+    security_opt: ["seccomp:unconfined"]
+    environment:
+      ETCD_USE_EMBED: "true"
+      ETCD_DATA_DIR: /var/lib/milvus/etcd
+      ETCD_CONFIG_PATH: /milvus/configs/embedEtcd.yaml
+      COMMON_STORAGETYPE: local
+    volumes:
+      - milvus:/var/lib/milvus
+      - ./deploy/milvus/embedEtcd.yaml:/milvus/configs/embedEtcd.yaml:ro
+    ports:
+      - "19530:19530"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 15s
+      start_period: 60s
+      retries: 5
+
+  # --- RTSP simulator: loops the sample videos as three live camera streams --
+  mediamtx:
+    image: bluenviron/mediamtx:1.12.3
+    ports:
+      - "8554:8554"
+
+  camera-sim:
+    image: linuxserver/ffmpeg:7.1.1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        for i in 0 1 2; do
+          ffmpeg -nostdin -re -stream_loop -1 -i /videos/campus4-c$$i.mp4 -c copy -f rtsp
+          -rtsp_transport tcp rtsp://mediamtx:8554/cam$$((i+1)) & done; wait
+    volumes:
+      - ./data/videos:/videos:ro
+    depends_on: [mediamtx]
+
+  # --- Pipelines (pick one) ------------------------------------------------
+  pipeline:
+    <<: *gpu
+    profiles: ["gpu"]
+    build:
+      context: .
+      dockerfile: docker/pipeline.Dockerfile
+    volumes:
+      - ./models:/app/models
+    ports:
+      - "9100:9100"
+    depends_on: [api, milvus, camera-sim]
+    restart: unless-stopped
+
+  deepstream:
+    <<: *gpu
+    profiles: ["deepstream"]
+    build:
+      context: .
+      dockerfile: docker/deepstream.Dockerfile
+    volumes:
+      - ./models:/app/models
+    ports:
+      - "9100:9100"
+    depends_on: [api, milvus, camera-sim]
+    restart: unless-stopped
+
+  # --- Monitoring ----------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on: [prometheus]
+
+volumes:
+  pgdata:
+  milvus:

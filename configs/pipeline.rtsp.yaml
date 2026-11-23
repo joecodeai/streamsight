@@ -1,0 +1,39 @@
+# docker-compose setup: three RTSP streams served by MediaMTX (looped sample videos),
+# events to the API container, embeddings in the Milvus container.
+
+cameras:
+  - id: cam1
+    name: Campus view 1
+    uri: rtsp://mediamtx:8554/cam1
+    zones:
+      - name: walkway
+        polygon: [[40, 150], [320, 150], [350, 285], [10, 285]]
+  - id: cam2
+    name: Campus view 2
+    uri: rtsp://mediamtx:8554/cam2
+  - id: cam3
+    name: Campus view 3
+    uri: rtsp://mediamtx:8554/cam3
+
+detector:
+  backend: onnxruntime
+  device: tensorrt
+  fp16: true
+  model: models/yolo11n.onnx
+  classes: [0]
+
+reid:
+  enabled: true
+  model: models/osnet_x0_25_msmt17.onnx
+  device: cuda
+  gallery: milvus
+  milvus_uri: http://milvus:19530
+  match_threshold: 0.6
+
+events:
+  api_url: http://api:8000
+  update_interval_s: 1.0
+
+metrics:
+  enabled: true
+  port: 9100

@@ -1,0 +1,12 @@
+.venv
+.git
+.pytest_cache
+.ruff_cache
+**/__pycache__
+models
+data
+output
+benchmarks/results/*.log
+*.db
+*.jsonl
+deepstream/parser/*.so
