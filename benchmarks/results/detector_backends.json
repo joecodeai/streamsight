@@ -1,0 +1,157 @@
+{
+  "meta": {
+    "date": "2026-11-23",
+    "model": "yolo11n.onnx",
+    "input": "640x640",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "cpu": "Intel(R) Core(TM) Ultra 9 285K",
+    "onnxruntime": "1.32.0",
+    "openvino": "2026.4.1"
+  },
+  "results": [
+    {
+      "backend": "ort-cpu",
+      "batch": 1,
+      "mean_ms": 11.439,
+      "p50_ms": 11.252,
+      "p95_ms": 14.13,
+      "images_per_s": 87.418
+    },
+    {
+      "backend": "ort-cpu",
+      "batch": 4,
+      "mean_ms": 38.866,
+      "p50_ms": 37.965,
+      "p95_ms": 45.863,
+      "images_per_s": 102.916
+    },
+    {
+      "backend": "ort-cpu",
+      "batch": 8,
+      "mean_ms": 92.073,
+      "p50_ms": 86.246,
+      "p95_ms": 120.486,
+      "images_per_s": 86.888
+    },
+    {
+      "backend": "ort-cuda",
+      "batch": 1,
+      "mean_ms": 2.104,
+      "p50_ms": 2.105,
+      "p95_ms": 2.177,
+      "images_per_s": 475.209
+    },
+    {
+      "backend": "ort-cuda",
+      "batch": 4,
+      "mean_ms": 4.225,
+      "p50_ms": 4.199,
+      "p95_ms": 4.437,
+      "images_per_s": 946.727
+    },
+    {
+      "backend": "ort-cuda",
+      "batch": 8,
+      "mean_ms": 7.826,
+      "p50_ms": 7.79,
+      "p95_ms": 8.034,
+      "images_per_s": 1022.249
+    },
+    {
+      "backend": "ort-tensorrt",
+      "batch": 1,
+      "mean_ms": 1.122,
+      "p50_ms": 1.11,
+      "p95_ms": 1.179,
+      "images_per_s": 891.413
+    },
+    {
+      "backend": "ort-tensorrt",
+      "batch": 4,
+      "mean_ms": 2.781,
+      "p50_ms": 2.782,
+      "p95_ms": 2.986,
+      "images_per_s": 1438.358
+    },
+    {
+      "backend": "ort-tensorrt",
+      "batch": 8,
+      "mean_ms": 5.27,
+      "p50_ms": 5.262,
+      "p95_ms": 5.371,
+      "images_per_s": 1518.002
+    },
+    {
+      "backend": "openvino-cpu",
+      "batch": 1,
+      "mean_ms": 11.559,
+      "p50_ms": 11.591,
+      "p95_ms": 13.012,
+      "images_per_s": 86.511
+    },
+    {
+      "backend": "openvino-cpu",
+      "batch": 4,
+      "mean_ms": 40.148,
+      "p50_ms": 38.699,
+      "p95_ms": 48.39,
+      "images_per_s": 99.632
+    },
+    {
+      "backend": "openvino-cpu",
+      "batch": 8,
+      "mean_ms": 76.784,
+      "p50_ms": 76.109,
+      "p95_ms": 81.329,
+      "images_per_s": 104.188
+    },
+    {
+      "backend": "trtexec-fp32",
+      "batch": 1,
+      "mean_ms": 0.735,
+      "p50_ms": 0.717,
+      "p95_ms": 0.908,
+      "images_per_s": 1360.99
+    },
+    {
+      "backend": "trtexec-fp32",
+      "batch": 4,
+      "mean_ms": 1.382,
+      "p50_ms": 1.333,
+      "p95_ms": 1.677,
+      "images_per_s": 2893.351
+    },
+    {
+      "backend": "trtexec-fp32",
+      "batch": 8,
+      "mean_ms": 2.042,
+      "p50_ms": 1.996,
+      "p95_ms": 2.399,
+      "images_per_s": 3917.171
+    },
+    {
+      "backend": "trtexec-fp16",
+      "batch": 1,
+      "mean_ms": 0.395,
+      "p50_ms": 0.39,
+      "p95_ms": 0.401,
+      "images_per_s": 2530.32
+    },
+    {
+      "backend": "trtexec-fp16",
+      "batch": 4,
+      "mean_ms": 0.609,
+      "p50_ms": 0.609,
+      "p95_ms": 0.615,
+      "images_per_s": 6570.496
+    },
+    {
+      "backend": "trtexec-fp16",
+      "batch": 8,
+      "mean_ms": 0.929,
+      "p50_ms": 0.929,
+      "p95_ms": 0.935,
+      "images_per_s": 8608.797
+    }
+  ]
+}
