@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Models, engines and data (downloaded or generated, never committed)
+models/
+*.engine
+*.onnx
+*.pt
+data/videos/
+output/
+*.db
+*.jsonl
+
+# DeepStream parser build output
+deepstream/parser/*.so
+deepstream/parser/*.o
+
+# Local env
+.env
+.idea/
+.vscode/
+deploy/k8s/secrets.env

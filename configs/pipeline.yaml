@@ -1,0 +1,62 @@
+# Local demo: three overlapping cameras from the EPFL "campus" multi-camera dataset.
+# Download with: python scripts/download_samples.py
+# For live RTSP cameras, see configs/pipeline.rtsp.yaml.
+
+target_fps: 25
+
+cameras:
+  - id: cam1
+    name: Campus view 1
+    uri: data/videos/campus4-c0.mp4
+    zones:
+      - name: walkway
+        polygon: [[40, 150], [320, 150], [350, 285], [10, 285]]
+  - id: cam2
+    name: Campus view 2
+    uri: data/videos/campus4-c1.mp4
+  - id: cam3
+    name: Campus view 3
+    uri: data/videos/campus4-c2.mp4
+
+detector:
+  backend: onnxruntime        # onnxruntime | openvino
+  device: tensorrt            # cpu | cuda | tensorrt
+  fp16: true
+  model: models/yolo11n.onnx  # use models/yolo11n-pose.onnx with task: pose for keypoints + fall detection
+  task: detect
+  input_size: 640
+  conf_threshold: 0.35
+  iou_threshold: 0.5
+  classes: [0]                # person
+
+tracker:
+  high_thresh: 0.5
+  low_thresh: 0.1
+  new_track_thresh: 0.6
+  match_thresh: 0.8
+  track_buffer: 30
+  min_hits: 3
+
+reid:
+  enabled: true
+  model: models/osnet_x0_25_msmt17.onnx
+  device: cuda
+  gallery: memory             # memory | milvus
+  milvus_uri: http://localhost:19530
+  match_threshold: 0.6
+  min_track_frames: 5
+  embed_every: 5
+
+events:
+  api_url: http://localhost:8000
+  batch_size: 100
+  flush_interval_s: 1.0
+  update_interval_s: 1.0
+
+metrics:
+  enabled: true
+  port: 9100
+
+output:
+  save_dir: null
+  draw_keypoints: true
