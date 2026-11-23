@@ -1,0 +1,30 @@
+# Secondary model: OSNet x0.25 (MSMT17) person re-identification.
+# Runs on every tracked person and attaches the raw 512-D embedding to the object as
+# tensor metadata (output-tensor-meta=1). The Python probe reads it for cross-camera matching.
+
+[property]
+gpu-id=0
+onnx-file=../../models/osnet_x0_25_msmt17.onnx
+model-engine-file=../../models/osnet_x0_25_msmt17.onnx_b16_gpu0_fp16.engine
+batch-size=16
+network-mode=2
+gie-unique-id=2
+operate-on-gie-id=1
+operate-on-class-ids=0
+# 2 = secondary: runs on detected objects, not full frames
+process-mode=2
+# 100 = "other": no built-in parsing, just output tensors
+network-type=100
+output-tensor-meta=1
+infer-dims=3;256;128
+
+# ImageNet normalisation in RGB. nvinfer applies (pixel - offset) * scale with one scale
+# for all channels, so the mean of the three std values is used (0.226 * 255).
+model-color-format=0
+net-scale-factor=0.01735207357279195
+offsets=123.675;116.28;103.53
+maintain-aspect-ratio=0
+
+# Skip tiny crops: embeddings from a few pixels are noise
+input-object-min-width=16
+input-object-min-height=32
