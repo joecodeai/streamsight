@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StreamSight</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>StreamSight</h1>
+    <span class="sub">Multi-camera video analytics</span>
+    <span id="updated" class="muted"></span>
+  </header>
+
+  <main>
+    <section class="kpis" id="kpis"></section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Cameras</h2>
+        <table id="cameras">
+          <thead><tr><th>Camera</th><th>Status</th><th>Active tracks</th><th>Events (5 min)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Seen on more than one camera</h2>
+        <table id="identities">
+          <thead><tr><th>Identity</th><th>Cameras</th><th>Last seen</th><th>Sightings</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Recent events</h2>
+      <div class="filters">
+        <select id="type-filter">
+          <option value="">All types</option>
+          <option value="reid_match">Re-identification</option>
+          <option value="zone_enter">Zone enter</option>
+          <option value="zone_exit">Zone exit</option>
+          <option value="fall_suspected">Fall suspected</option>
+          <option value="track_start">Track start</option>
+          <option value="track_end">Track end</option>
+        </select>
+      </div>
+      <table id="events">
+        <thead><tr><th>Time</th><th>Camera</th><th>Type</th><th>Track</th><th>Identity</th><th>Details</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
